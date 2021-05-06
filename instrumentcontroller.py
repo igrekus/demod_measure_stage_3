@@ -149,10 +149,17 @@ class InstrumentController(QObject):
             'loss': 0.82,
             'ref_level': 10.0,
             'scale_y': 5.0,
+            'Umin': 4.75,
+            'Umax': 5.25,
+            'Udelta': 0.05,
         }
 
         src_u = secondary['Usrc']
         src_i = 200   # mA
+
+        u_start = secondary['Umin']
+        u_end = secondary['Umax']
+        u_step = secondary['Udelta']
 
         freq_lo_start = secondary['Flo_min']
         freq_lo_end = secondary['Flo_max']
@@ -167,6 +174,7 @@ class InstrumentController(QObject):
 
         freq_lo_values = [round(x, 3) for x in np.arange(start=freq_lo_start, stop=freq_lo_end + 0.002, step=freq_lo_step)]
         freq_rf_deltas_and_losses = [[k / 1_000, v] for k, v in self._deltas.items()]
+        u_values = [round(x, 3) for x in np.arange(start=u_start, stop=u_end + 0.002, step=u_step)]
 
         src.send(f'APPLY p6v,{src_u}V,{src_i}mA')
 
