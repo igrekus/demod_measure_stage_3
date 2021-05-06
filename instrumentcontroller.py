@@ -77,7 +77,6 @@ class InstrumentController(QObject):
         self.found = False
         self.present = False
         self.hasResult = False
-        self.only_main_states = False
 
         self.result = MeasureResult()
 
