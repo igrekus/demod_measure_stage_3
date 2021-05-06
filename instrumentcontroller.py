@@ -213,7 +213,7 @@ class InstrumentController(QObject):
                 gen_lo.send(f'OUTP:STAT ON')
                 gen_rf.send(f'OUTP:STAT ON')
 
-                time.sleep(0.5)
+                time.sleep(0.1)
                 if not mock_enabled:
                     time.sleep(0.5)
 
