@@ -67,6 +67,12 @@ class InstrumentController(QObject):
             with open('./params.ini', 'rt', encoding='utf-8') as f:
                 self.secondaryParams = ast.literal_eval(''.join(f.readlines()))
 
+        self._deltas = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 350, 400, 450]
+
+        if isfile('./deltas.ini'):
+            with open('./deltas.ini', 'rt', encoding='utf-8') as f:
+                self._deltas = ast.literal_eval(''.join(f.readlines()))
+
         self._instruments = dict()
         self.found = False
         self.present = False
@@ -165,7 +171,7 @@ class InstrumentController(QObject):
         scale_y = secondary['scale_y']
 
         freq_lo_values = [round(x, 3) for x in np.arange(start=freq_lo_start, stop=freq_lo_end + 0.2, step=freq_lo_step)]
-        freq_rf_deltas = [x / 1_000 for x in [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 350, 400, 450]]
+        freq_rf_deltas = [x / 1_000 for x in self._deltas]
 
         src.send(f'APPLY p6v,{src_u}V,{src_i}mA')
 
