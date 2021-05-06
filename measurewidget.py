@@ -1,6 +1,6 @@
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QRunnable, QThreadPool
-from PyQt5.QtWidgets import QWidget, QDoubleSpinBox
+from PyQt5.QtWidgets import QWidget, QDoubleSpinBox, QFrame
 
 from deviceselectwidget import DeviceSelectWidget
 
@@ -234,6 +234,37 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._devices._layout.addRow('Scale y=', self._spinScaleY)
         # endregion
 
+        # region current measure params
+        self._lineSeparator = QFrame()
+        self._lineSeparator.setFrameShape(QFrame.HLine)
+        self._lineSeparator.setFrameShadow(QFrame.Sunken)
+        self._devices._layout.addRow(self._lineSeparator)
+
+        self._spinUmin = QDoubleSpinBox(parent=self)
+        self._spinUmin.setMinimum(0)
+        self._spinUmin.setMaximum(12)
+        self._spinUmin.setSingleStep(0.1)
+        self._spinUmin.setValue(4.75)
+        self._spinUmin.setSuffix(' В')
+        self._devices._layout.addRow('Uмин.=', self._spinUmin)
+
+        self._spinUmax = QDoubleSpinBox(parent=self)
+        self._spinUmax.setMinimum(0)
+        self._spinUmax.setMaximum(12)
+        self._spinUmax.setSingleStep(0.1)
+        self._spinUmax.setValue(5.25)
+        self._spinUmax.setSuffix(' В')
+        self._devices._layout.addRow('Uмакс.=', self._spinUmax)
+
+        self._spinUdelta = QDoubleSpinBox(parent=self)
+        self._spinUdelta.setMinimum(0)
+        self._spinUdelta.setMaximum(12)
+        self._spinUdelta.setSingleStep(0.1)
+        self._spinUdelta.setValue(0.05)
+        self._spinUdelta.setSuffix(' В')
+        self._devices._layout.addRow('ΔU=', self._spinUdelta)
+        # endregion
+
         self._connectSignals()
 
     def _connectSignals(self):
@@ -250,6 +281,10 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
 
         self._spinRefLevel.valueChanged.connect(self.on_params_changed)
         self._spinScaleY.valueChanged.connect(self.on_params_changed)
+
+        self._spinUmin.valueChanged.connect(self.on_params_changed)
+        self._spinUmax.valueChanged.connect(self.on_params_changed)
+        self._spinUdelta.valueChanged.connect(self.on_params_changed)
 
     def check(self):
         print('subclass checking...')
@@ -303,6 +338,9 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
             'loss': self._spinLoss.value(),
             'ref_level': self._spinRefLevel.value(),
             'scale_y': self._spinScaleY.value(),
+            'Umin': self._spinUmin.value(),
+            'Umax': self._spinUmax.value(),
+            'Udelta': self._spinUdelta.value(),
         }
         self.secondaryChanged.emit(params)
 
@@ -316,3 +354,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinLoss.setValue(params['loss'])
         self._spinRefLevel.setValue(params['ref_level'])
         self._spinScaleY.setValue(params['scale_y'])
+
+        self._spinUmin.setValue(params['Umin'])
+        self._spinUmax.setValue(params['Umax'])
+        self._spinUdelta.setValue(params['Udelta'])
