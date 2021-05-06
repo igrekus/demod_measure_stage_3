@@ -247,6 +247,7 @@ class InstrumentController(QObject):
                 print(raw_point)
 
                 res.append(raw_point)
+                self._add_measure_point(raw_point)
 
         if not mock_enabled:
             with open('out.txt', mode='wt', encoding='utf-8') as f:
