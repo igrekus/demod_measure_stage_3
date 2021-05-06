@@ -47,19 +47,14 @@ class InstrumentController(QObject):
         }
 
         self.secondaryParams = {
-            'Frf_delta': 0.5,
-            'Frf_max': 3.06,
-            'Frf_min': 0.06,
-            'Prf_delta': 2.0,
-            'Prf_max': 6.0,
-            'Prf_min': -20.0,
-            'Flo_delta': 0.5,
-            'Flo_max': 3.05,
-            'Flo_min': 0.05,
-            'Plo': -5.0,
             'Usrc': 5.0,
+            'Flo_min': 1.0,
+            'Flo_max': 3.0,
+            'Flo_delta': 0.5,
+            'Plo': -5.0,
+            'Prf': -5.0,
             'loss': 0.82,
-            'ref_lev': 10.0,
+            'ref_level': 10.0,
             'scale_y': 5.0,
         }
 
