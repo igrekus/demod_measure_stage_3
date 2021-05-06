@@ -62,7 +62,8 @@ class InstrumentController(QObject):
             with open('./params.ini', 'rt', encoding='utf-8') as f:
                 self.secondaryParams = ast.literal_eval(''.join(f.readlines()))
 
-        self._deltas = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 350, 400, 450]
+        self._deltas = {5: 0.9, 10: 0.82, 20: 0.82, 30: 0.82, 40: 0.82, 50: 0.86, 60: 0.86, 70: 0.86, 80: 0.86,
+                        90: 0.86, 100: 0.93, 150: 0.98, 200: 0.99, 250: 1.02, 300: 1.05, 350: 1.1, 400: 1.15, 450: 1.51}
 
         if isfile('./deltas.ini'):
             with open('./deltas.ini', 'rt', encoding='utf-8') as f:
@@ -165,7 +166,7 @@ class InstrumentController(QObject):
         scale_y = secondary['scale_y']
 
         freq_lo_values = [round(x, 3) for x in np.arange(start=freq_lo_start, stop=freq_lo_end + 0.2, step=freq_lo_step)]
-        freq_rf_deltas = [x / 1_000 for x in self._deltas]
+        freq_rf_deltas_and_losses = [[k / 1_000, v] for k, v in self._deltas.items()]
 
         src.send(f'APPLY p6v,{src_u}V,{src_i}mA')
 
@@ -186,7 +187,7 @@ class InstrumentController(QObject):
         for freq_lo in freq_lo_values:
             gen_lo.send(f'SOUR:FREQ {freq_lo}GHz')
 
-            for freq_rf_delta in freq_rf_deltas:
+            for freq_rf_delta, loss in freq_rf_deltas_and_losses:
 
                 if token.cancelled:
                     gen_lo.send(f'OUTP:STAT OFF')
@@ -200,7 +201,7 @@ class InstrumentController(QObject):
                     gen_rf.send(f'SOUR:POW {pow_rf}dbm')
                     gen_lo.send(f'SOUR:POW {pow_lo}dbm')
 
-                    gen_rf.send(f'SOUR:FREQ {freq_lo_start + freq_rf_deltas[0]}GHz')
+                    gen_rf.send(f'SOUR:FREQ {freq_lo_start + freq_rf_deltas_and_losses[0][0]}GHz')
                     gen_lo.send(f'SOUR:FREQ {freq_lo_start}GHz')
                     raise RuntimeError('measurement cancelled')
 
@@ -240,7 +241,7 @@ class InstrumentController(QObject):
 
                 if mock_enabled:
                     raw_point = mocked_raw_data[index]
-                    raw_point['loss'] = p_loss
+                    raw_point['loss'] = loss
                     index += 1
 
                 print(raw_point)
