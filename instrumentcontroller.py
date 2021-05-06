@@ -165,7 +165,7 @@ class InstrumentController(QObject):
         ref_level = secondary['ref_level']
         scale_y = secondary['scale_y']
 
-        freq_lo_values = [round(x, 3) for x in np.arange(start=freq_lo_start, stop=freq_lo_end + 0.2, step=freq_lo_step)]
+        freq_lo_values = [round(x, 3) for x in np.arange(start=freq_lo_start, stop=freq_lo_end + 0.002, step=freq_lo_step)]
         freq_rf_deltas_and_losses = [[k / 1_000, v] for k, v in self._deltas.items()]
 
         src.send(f'APPLY p6v,{src_u}V,{src_i}mA')
