@@ -102,7 +102,7 @@ class MeasureResult:
         self._process_point(data)
 
     def process_i(self, data):
-        self.data_i['Iпот(Uпит)'] = [list(d.values()) for d in data]
+        self.data_i[1] = [list(d.values()) for d in data]
 
     @property
     def report(self):

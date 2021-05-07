@@ -305,11 +305,12 @@ class InstrumentController(QObject):
             raw_point = {
                 'u_mul': u,
                 # 'u_mul': u_mul_read,
-                'i_mul': i_mul_read,
+                'i_mul': i_mul_read * 1_000,
             }
 
             if mock_enabled:
                 raw_point = mocked_raw_data[index]
+                raw_point['i_mul'] *= 1_000
                 index += 1
 
             print(raw_point)
