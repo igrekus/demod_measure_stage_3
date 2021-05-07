@@ -24,6 +24,7 @@ class MeasureResult:
         self.ready = False
 
         self.data = defaultdict(list)
+        self.data_i = dict()
 
     def __bool__(self):
         return self.ready
@@ -100,6 +101,9 @@ class MeasureResult:
         self._raw.append(data)
         self._process_point(data)
 
+    def process_i(self, data):
+        self.data_i[1] = [list(d.values()) for d in data]
+
     @property
     def report(self):
         return dedent("""        Генераторы:
@@ -120,7 +124,6 @@ class MeasureResult:
         Кп, дБм={k_loss}""".format(**self._report))
 
     def export_excel(self):
-        # TODO implement
         device = 'demod'
         path = 'xlsx'
         if not os.path.isdir(f'{path}'):
