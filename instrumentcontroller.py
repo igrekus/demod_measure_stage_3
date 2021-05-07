@@ -56,6 +56,9 @@ class InstrumentController(QObject):
             'loss': 0.82,
             'ref_level': 10.0,
             'scale_y': 5.0,
+            'Umin': 4.75,
+            'Umax': 5.25,
+            'Udelta': 0.05,
         }
 
         if isfile('./params.ini'):
@@ -119,7 +122,8 @@ class InstrumentController(QObject):
 
         self._clear()
         self._init()
-        self._measure_s_params(token, param, secondary)
+        _, i_res = self._measure_s_params(token, param, secondary)
+        self.result.process_i(i_res)
         return True
 
     def _clear(self):
@@ -221,7 +225,7 @@ class InstrumentController(QObject):
                 gen_lo.send(f'OUTP:STAT ON')
                 gen_rf.send(f'OUTP:STAT ON')
 
-                time.sleep(0.1)
+                time.sleep(0.01)
                 if not mock_enabled:
                     time.sleep(0.5)
 
@@ -274,7 +278,48 @@ class InstrumentController(QObject):
 
         gen_rf.send(f'SOUR:FREQ {freq_lo_start + freq_rf_deltas_and_losses[0][0]}GHz')
         gen_lo.send(f'SOUR:FREQ {freq_lo_start}GHz')
-        return res
+
+        # measure current
+        # temporary hacky implementation
+        if mock_enabled:
+            with open('./mock_data/current.txt', mode='rt', encoding='utf-8') as f:
+                index = 0
+                mocked_raw_data = ast.literal_eval(''.join(f.readlines()))
+
+        i_res = []
+        for u in u_values:
+            if token.cancelled:
+                src.send('OUTPut OFF')
+                raise RuntimeError('measurement cancelled')
+
+            src.send(f'APPLY p6v,{u}V,{src_i}mA')
+            src.send('OUTPut ON')
+
+            time.sleep(0.1)
+            if not mock_enabled:
+                time.sleep(0.5)
+
+            # u_mul_read = float(mult.query('MEAS:VOLT?'))
+            i_mul_read = float(mult.query('MEAS:CURR:DC? 1A,DEF'))
+
+            raw_point = {
+                'u_mul': u,
+                # 'u_mul': u_mul_read,
+                'i_mul': i_mul_read,
+            }
+
+            if mock_enabled:
+                raw_point = mocked_raw_data[index]
+                index += 1
+
+            print(raw_point)
+
+            i_res.append(raw_point)
+
+        if not mock_enabled:
+            time.sleep(0.5)
+        src.send('OUTPut OFF')
+        return res, i_res
 
     def _add_measure_point(self, data):
         print('measured point:', data)

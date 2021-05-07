@@ -24,6 +24,7 @@ class MeasureResult:
         self.ready = False
 
         self.data = defaultdict(list)
+        self.data_i = dict()
 
     def __bool__(self):
         return self.ready
@@ -99,6 +100,9 @@ class MeasureResult:
     def add_point(self, data):
         self._raw.append(data)
         self._process_point(data)
+
+    def process_i(self, data):
+        self.data_i['Iпот(Uпит)'] = [list(d.values()) for d in data]
 
     @property
     def report(self):
