@@ -143,21 +143,6 @@ class InstrumentController(QObject):
         mult = self._instruments['Мультиметр']
         sa = self._instruments['Анализатор']
 
-        secondary = {
-            'Usrc': 5.0,
-            'Flo_min': 1.0,
-            'Flo_max': 3.0,
-            'Flo_delta': 0.5,
-            'Plo': -5.0,
-            'Prf': -5.0,
-            'loss': 0.82,
-            'ref_level': 10.0,
-            'scale_y': 5.0,
-            'Umin': 4.75,
-            'Umax': 5.25,
-            'Udelta': 0.05,
-        }
-
         src_u = secondary['Usrc']
         src_i = 200   # mA
 
