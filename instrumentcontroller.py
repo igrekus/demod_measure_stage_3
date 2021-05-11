@@ -172,6 +172,9 @@ class InstrumentController(QObject):
         sa.send(f'DISP:WIND:TRAC:Y:RLEV {ref_level}')
         sa.send(f'DISP:WIND:TRAC:Y:PDIV {scale_y}')
 
+        gen_lo.send(f':OUTP:MOD:STAT OFF')
+        # gen_rf.send(f':OUTP:MOD:STAT OFF')
+
         gen_lo.send(f'SOUR:POW {pow_lo}dbm')
         gen_rf.send(f'SOUR:POW {pow_rf}dbm')
 
