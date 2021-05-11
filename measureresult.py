@@ -128,7 +128,8 @@ class MeasureResult:
         path = 'xlsx'
         if not os.path.isdir(f'{path}'):
             os.makedirs(f'{path}')
-        file_name = f'./{path}/{device}-{datetime.datetime.now().isoformat().replace(":", ".")}.xlsx'
+        file_name_main = f'./{path}/{device}-stage3-{datetime.datetime.now().isoformat().replace(":", ".")}.xlsx'
+        file_name_current = f'./{path}/{device}-stage4-{datetime.datetime.now().isoformat().replace(":", ".")}.xlsx'
         df = pd.DataFrame(self._processed)
 
         df.columns = [
@@ -142,7 +143,11 @@ class MeasureResult:
             'Pпч, дБм',
             'Кп, дБм',
         ]
-        df.to_excel(file_name, engine='openpyxl', index=False)
+        df.to_excel(file_name_main, engine='openpyxl', index=False)
 
-        full_path = os.path.abspath(file_name)
+        df = pd.DataFrame({'u': v[0], 'i': v[1]} for v in self.data_i[1])
+        df.columns = ['Uпит, В', 'Iпот, мА']
+        df.to_excel(file_name_current, engine='openpyxl', index=False)
+
+        full_path = os.path.abspath(file_name_main)
         Popen(f'explorer /select,"{full_path}"')
