@@ -69,8 +69,6 @@ class PrimaryPlotWidget(QWidget):
 
         self.setLayout(self._grid)
 
-        self._init()
-
     def mouseMoved_00(self, event):
         pos = event[0]
         if self._plot_00.sceneBoundingRect().contains(pos):
@@ -103,17 +101,19 @@ class PrimaryPlotWidget(QWidget):
                 for f, curve in self._curves_01.items()
             ]))
 
-    def _init(self):
-        pass
-
     def clear(self):
-        pass
+        def _remove_curves(plot, curve_dict):
+            for _, curve in curve_dict.items():
+                plot.removeItem(curve)
+
+        _remove_curves(self._plot_00, self._curves_00)
+        _remove_curves(self._plot_01, self._curves_01)
+
+        self._curves_00.clear()
+        self._curves_01.clear()
 
     def plot(self):
         print('plotting primary stats')
-        self.clear()
-        self._init()
-
         _plot_curves(self._controller.result.data, self._curves_00, self._plot_00, 'ГГц')
         _plot_curves(self._controller.result.data_i, self._curves_01, self._plot_01, '')
 
