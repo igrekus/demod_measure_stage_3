@@ -234,6 +234,7 @@ class InstrumentController(QObject):
                     'u_mul': src_u,
                     'i_mul': i_mul_read,
                     'pow_read': pow_read,
+                    'loss': loss,
                 }
 
                 if mock_enabled:
