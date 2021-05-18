@@ -30,11 +30,11 @@ class PrimaryPlotWidget(QWidget):
         self._grid.addWidget(self._stat_label, 0, 0)
         self._grid.addWidget(self._win, 1, 0)
 
-        self._plot_00 = self._win.addPlot(row=0, col=0, colspan=2, rowspan=2)
+        self._plot_00 = self._win.addPlot(row=0, col=0, colspan=1, rowspan=1)
 
-        self._plot_01 = self._win.addPlot(row=0, col=2)
+        self._plot_01 = self._win.addPlot(row=0, col=1)
 
-        self._plot_dummy = self._win.addPlot(row=1, col=2)
+        # self._plot_dummy = self._win.addPlot(row=1, col=2)
 
         self._curves_00 = dict()
         self._curves_01 = dict()
