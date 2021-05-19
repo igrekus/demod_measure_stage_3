@@ -1,5 +1,7 @@
+import ast
 import datetime
 import os.path
+import pprint
 
 from collections import defaultdict
 from subprocess import Popen
@@ -25,6 +27,11 @@ class MeasureResult:
         self.data = defaultdict(list)
         self.data_i = dict()
 
+        self.adjustment = None
+        if os.path.isfile('./adjust.ini'):
+            with open('./adjust.ini', 'rt', encoding='utf-8') as f:
+                self.adjustment = ast.literal_eval(''.join(f.readlines()))
+
     def __bool__(self):
         return self.ready
 
@@ -48,6 +55,10 @@ class MeasureResult:
         p_loss = data['loss']
         k_loss = p_pch - p_rf + p_loss
         # endregion
+
+        if self.adjustment is not None:
+            point = self.adjustment[len(self._processed)]
+            k_loss += point['k_loss']
 
         self._report = {
             'p_lo': p_lo,
@@ -80,6 +91,20 @@ class MeasureResult:
     def add_point(self, data):
         self._raw.append(data)
         self._process_point(data)
+
+    def save_adjustment_template(self):
+        if self.adjustment is None:
+            print('measured, saving template')
+            self.adjustment = [{
+                'p_lo': p['p_lo'],
+                'f_lo': p['f_lo'],
+                'p_rf': p['p_rf'],
+                'f_rf': p['f_rf'],
+                'k_loss': 0,
+
+            } for p in self._processed]
+        with open('adjust.ini', mode='wt', encoding='utf-8') as f:
+            pprint.pprint(self.adjustment, stream=f, sort_dicts=False)
 
     def process_i(self, data):
         self.data_i[1] = [list(d.values()) for d in data]
