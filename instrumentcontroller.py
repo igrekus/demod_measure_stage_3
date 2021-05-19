@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 
+from collections import defaultdict
 from pprint import pprint
 from os.path import isfile
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
@@ -80,6 +81,7 @@ class InstrumentController(QObject):
         self.result = MeasureResult()
 
         self._calibrated_pows_lo = {}
+        self._calibrated_pows_rf = {}
 
     def __str__(self):
         return f'{self._instruments}'
@@ -169,6 +171,76 @@ class InstrumentController(QObject):
         gen_lo.send(f'OUTP:STAT OFF')
         sa.send(':CAL:AUTO ON')
         self._calibrated_pows_lo = result
+        return True
+
+    def _calibrateRF(self, token, secondary):
+        print('run calibrate RF with', secondary)
+
+        gen_rf = self._instruments['P RF']
+        sa = self._instruments['Анализатор']
+
+        secondary = self.secondaryParams
+
+        freq_lo_start = secondary['Flo_min']
+        freq_lo_end = secondary['Flo_max']
+        freq_lo_step = secondary['Flo_delta']
+
+        pow_lo = secondary['Plo']
+        pow_rf = secondary['Prf']
+
+        freq_lo_values = [round(x, 3) for x in np.arange(start=freq_lo_start, stop=freq_lo_end + 0.002, step=freq_lo_step)]
+        freq_rf_deltas_and_losses = [[k / 1_000, v] for k, v in self._deltas.items()]
+
+        sa.send(':CAL:AUTO OFF')
+        sa.send(':SENS:FREQ:SPAN 1MHz')
+        sa.send(f'DISP:WIND:TRAC:Y:RLEV 10')
+        sa.send(f'DISP:WIND:TRAC:Y:PDIV 5')
+        sa.send(':CALC:MARK1:MODE POS')
+
+        result = defaultdict(dict)
+
+        for freq_lo in freq_lo_values:
+            for freq_rf_delta, loss in freq_rf_deltas_and_losses:
+
+                if token.cancelled:
+                    gen_rf.send(f'OUTP:STAT OFF')
+
+                    time.sleep(0.5)
+
+                    gen_rf.send(f'SOUR:POW {pow_rf}dbm')
+                    gen_rf.send(f'SOUR:FREQ {freq_rf_deltas_and_losses[0][0]}GHz')
+                    raise RuntimeError('calibration cancelled')
+
+                freq_rf = freq_lo + freq_rf_delta
+                gen_rf.send(f'SOUR:FREQ {freq_rf}GHz')
+                gen_rf.send(f'SOUR:POW {pow_rf}dbm')
+                gen_rf.send(f'OUTP:STAT ON')
+
+                if not mock_enabled:
+                    time.sleep(0.25)
+
+                center_freq = freq_rf - freq_lo
+                sa.send(f':SENSe:FREQuency:CENTer {center_freq}GHz')
+                sa.send(f':CALCulate:MARKer1:X:CENTer {center_freq}GHz')
+
+                if not mock_enabled:
+                    time.sleep(0.25)
+
+                pow_read = float(sa.query(':CALCulate:MARKer:Y?'))
+                loss = abs(pow_rf - pow_read)
+                if mock_enabled:
+                    loss = 10
+
+                print('loss: ', loss)
+                result[freq_lo][freq_rf_delta] = loss
+
+        result = {k: v for k, v in result.items()}
+        with open('cal_rf.ini', mode='wt', encoding='utf-8') as f:
+            pprint(result, stream=f)
+
+        gen_rf.send(f'OUTP:STAT OFF')
+        sa.send(':CAL:AUTO ON')
+        self._calibrated_pows_rf = result
         return True
 
     def measure(self, token, params):
