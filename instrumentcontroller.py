@@ -313,9 +313,6 @@ class InstrumentController(QObject):
         gen_lo.send(f':OUTP:MOD:STAT OFF')
         # gen_rf.send(f':OUTP:MOD:STAT OFF')
 
-        gen_lo.send(f'SOUR:POW {pow_lo}dbm')
-        gen_rf.send(f'SOUR:POW {pow_rf}dbm')
-
         if mock_enabled:
             with open('./mock_data/-5db.txt', mode='rt', encoding='utf-8') as f:
                 index = 0
@@ -342,6 +339,9 @@ class InstrumentController(QObject):
                     gen_rf.send(f'SOUR:FREQ {freq_lo_start + freq_rf_deltas_and_losses[0][0]}GHz')
                     gen_lo.send(f'SOUR:FREQ {freq_lo_start}GHz')
                     raise RuntimeError('measurement cancelled')
+
+                gen_lo.send(f'SOUR:POW {pow_lo + self._calibrated_pows_lo.get(freq_lo, 0)}dbm')
+                gen_rf.send(f'SOUR:POW {pow_rf + self._calibrated_pows_rf.get(freq_lo, dict()).get(freq_rf_delta, 0)}dbm')
 
                 freq_rf = freq_lo + freq_rf_delta
                 gen_rf.send(f'SOUR:FREQ {freq_rf}GHz')
