@@ -1,6 +1,6 @@
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QRunnable, QThreadPool
-from PyQt5.QtWidgets import QWidget, QDoubleSpinBox, QFrame
+from PyQt5.QtWidgets import QWidget, QDoubleSpinBox, QFrame, QCheckBox
 
 from deviceselectwidget import DeviceSelectWidget
 
@@ -215,6 +215,10 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloDelta.setValue(0.5)
         self._spinFloDelta.setSuffix(' ГГц')
         self._devices._layout.addRow('ΔFгет=', self._spinFloDelta)
+
+        self._checkHalfFreqLo = QCheckBox(parent=self)
+        self._checkHalfFreqLo.setChecked(False)
+        self._devices._layout.addRow('1/2 Fгет.', self._checkHalfFreqLo)
         # endregion LO
 
         # region RF params
@@ -303,6 +307,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloMin.valueChanged.connect(self.on_params_changed)
         self._spinFloMax.valueChanged.connect(self.on_params_changed)
         self._spinFloDelta.valueChanged.connect(self.on_params_changed)
+        self._checkHalfFreqLo.toggled.connect(self.on_params_changed)
 
         self._spinPrf.valueChanged.connect(self.on_params_changed)
 
@@ -380,6 +385,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
             'Flo_min': self._spinFloMin.value(),
             'Flo_max': self._spinFloMax.value(),
             'Flo_delta': self._spinFloDelta.value(),
+            'half_f_lo': self._checkHalfFreqLo.isChecked(),
             'Prf': self._spinPrf.value(),
             'Usrc': self._spinUsrc.value(),
             'loss': self._spinLoss.value(),
@@ -396,6 +402,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloMin.setValue(params['Flo_min'])
         self._spinFloMax.setValue(params['Flo_max'])
         self._spinFloDelta.setValue(params['Flo_delta'])
+        self._checkHalfFreqLo.setChecked(params['half_f_lo'])
         self._spinPrf.setValue(params['Prf'])
         self._spinUsrc.setValue(params['Usrc'])
         self._spinLoss.setValue(params['loss'])
