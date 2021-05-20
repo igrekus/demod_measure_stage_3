@@ -348,8 +348,10 @@ class InstrumentController(QObject):
                     raise RuntimeError('measurement cancelled')
 
                 # TODO need t ocheck against loss?
-                gen_lo.send(f'SOUR:POW {pow_lo + self._calibrated_pows_lo.get(freq_lo, 0)}dbm')
-                gen_rf.send(f'SOUR:POW {pow_rf + self._calibrated_pows_rf.get(freq_lo, dict()).get(freq_rf_delta, 0)}dbm')
+                delta_lo = round(self._calibrated_pows_lo.get(freq_lo, 0), 2)
+                gen_lo.send(f'SOUR:POW {pow_lo + delta_lo}dbm')
+                delta_rf = round(self._calibrated_pows_rf.get(freq_lo, dict()).get(freq_rf_delta, 0), 2)
+                gen_rf.send(f'SOUR:POW {pow_rf + delta_rf}dbm')
 
                 freq_rf = freq_lo + freq_rf_delta
                 gen_rf.send(f'SOUR:FREQ {freq_rf}GHz')
