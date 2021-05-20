@@ -224,7 +224,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinPrf.setSingleStep(1)
         self._spinPrf.setValue(-20)
         self._spinPrf.setSuffix(' дБм')
-        self._devices._layout.addRow('Pвх.мин=', self._spinPrf)
+        self._devices._layout.addRow('Pвх.=', self._spinPrf)
         # endregion
 
         # region source params
