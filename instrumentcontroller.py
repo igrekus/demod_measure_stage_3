@@ -226,7 +226,7 @@ class InstrumentController(QObject):
                 if not mock_enabled:
                     time.sleep(0.35)
 
-                center_freq = freq_rf - freq_lo
+                center_freq = freq_rf
                 sa.send(f':SENSe:FREQuency:CENTer {center_freq}GHz')
                 sa.send(f':CALCulate:MARKer1:X:CENTer {center_freq}GHz')
 
