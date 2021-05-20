@@ -216,9 +216,9 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloDelta.setSuffix(' ГГц')
         self._devices._layout.addRow('ΔFгет=', self._spinFloDelta)
 
-        self._checkHalfFreqLo = QCheckBox(parent=self)
-        self._checkHalfFreqLo.setChecked(False)
-        self._devices._layout.addRow('1/2 Fгет.', self._checkHalfFreqLo)
+        self._checkX2FreqLo = QCheckBox(parent=self)
+        self._checkX2FreqLo.setChecked(False)
+        self._devices._layout.addRow('x2 Fгет.', self._checkX2FreqLo)
         # endregion LO
 
         # region RF params
@@ -307,7 +307,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloMin.valueChanged.connect(self.on_params_changed)
         self._spinFloMax.valueChanged.connect(self.on_params_changed)
         self._spinFloDelta.valueChanged.connect(self.on_params_changed)
-        self._checkHalfFreqLo.toggled.connect(self.on_params_changed)
+        self._checkX2FreqLo.toggled.connect(self.on_params_changed)
 
         self._spinPrf.valueChanged.connect(self.on_params_changed)
 
@@ -385,7 +385,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
             'Flo_min': self._spinFloMin.value(),
             'Flo_max': self._spinFloMax.value(),
             'Flo_delta': self._spinFloDelta.value(),
-            'half_f_lo': self._checkHalfFreqLo.isChecked(),
+            'half_x2_f_lo': self._checkX2FreqLo.isChecked(),
             'Prf': self._spinPrf.value(),
             'Usrc': self._spinUsrc.value(),
             'loss': self._spinLoss.value(),
@@ -402,13 +402,12 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloMin.setValue(params['Flo_min'])
         self._spinFloMax.setValue(params['Flo_max'])
         self._spinFloDelta.setValue(params['Flo_delta'])
-        self._checkHalfFreqLo.setChecked(params['half_f_lo'])
+        self._checkX2FreqLo.setChecked(params['half_x2_f_lo'])
         self._spinPrf.setValue(params['Prf'])
         self._spinUsrc.setValue(params['Usrc'])
         self._spinLoss.setValue(params['loss'])
         self._spinRefLevel.setValue(params['ref_level'])
         self._spinScaleY.setValue(params['scale_y'])
-
         self._spinUmin.setValue(params['Umin'])
         self._spinUmax.setValue(params['Umax'])
         self._spinUdelta.setValue(params['Udelta'])
