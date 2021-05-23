@@ -385,7 +385,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
             'Flo_min': self._spinFloMin.value(),
             'Flo_max': self._spinFloMax.value(),
             'Flo_delta': self._spinFloDelta.value(),
-            'half_x2_f_lo': self._checkX2FreqLo.isChecked(),
+            'is_Flo_x2': self._checkX2FreqLo.isChecked(),
             'Prf': self._spinPrf.value(),
             'Usrc': self._spinUsrc.value(),
             'loss': self._spinLoss.value(),
@@ -402,7 +402,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloMin.setValue(params['Flo_min'])
         self._spinFloMax.setValue(params['Flo_max'])
         self._spinFloDelta.setValue(params['Flo_delta'])
-        self._checkX2FreqLo.setChecked(params['half_x2_f_lo'])
+        self._checkX2FreqLo.setChecked(params['is_Flo_x2'])
         self._spinPrf.setValue(params['Prf'])
         self._spinUsrc.setValue(params['Usrc'])
         self._spinLoss.setValue(params['loss'])

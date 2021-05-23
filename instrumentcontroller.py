@@ -52,7 +52,7 @@ class InstrumentController(QObject):
             'Flo_min': 1.0,
             'Flo_max': 3.0,
             'Flo_delta': 0.5,
-            'half_x2_f_lo': False,
+            'is_Flo_x2': False,
             'Plo': -5.0,
             'Prf': -5.0,
             'loss': 0.82,
@@ -129,7 +129,7 @@ class InstrumentController(QObject):
         freq_lo_start = secondary['Flo_min']
         freq_lo_end = secondary['Flo_max']
         freq_lo_step = secondary['Flo_delta']
-        freq_lo_x2 = secondary['half_x2_f_lo']
+        freq_lo_x2 = secondary['is_Flo_x2']
 
         freq_lo_values = [round(x, 3) for x in
                           np.arange(start=freq_lo_start, stop=freq_lo_end + 0.0001, step=freq_lo_step)]
@@ -304,7 +304,7 @@ class InstrumentController(QObject):
         freq_lo_start = secondary['Flo_min']
         freq_lo_end = secondary['Flo_max']
         freq_lo_step = secondary['Flo_delta']
-        freq_lo_x2 = secondary['half_x2_f_lo']
+        freq_lo_x2 = secondary['is_Flo_x2']
 
         pow_lo = secondary['Plo']
         pow_rf = secondary['Prf']
