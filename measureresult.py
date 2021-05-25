@@ -45,7 +45,7 @@ class MeasureResult:
 
         p_rf = data['p_rf']
         f_rf = data['f_rf']
-        f_pch = (f_rf - f_lo)
+        f_pch = data['fpch']
 
         u_mul = data['u_mul']
         i_mul = data['i_mul']

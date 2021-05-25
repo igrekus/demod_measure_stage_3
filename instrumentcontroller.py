@@ -364,7 +364,7 @@ class InstrumentController(QObject):
                 delta_rf = round(self._calibrated_pows_rf.get(freq_lo, dict()).get(freq_rf_delta, 0), 2)
                 gen_rf.send(f'SOUR:POW {pow_rf + delta_rf}dbm')
 
-                freq_rf = freq_lo + freq_rf_delta
+                freq_rf = (freq_lo if not freq_lo_x2 else (freq_lo / 2)) + freq_rf_delta
                 gen_rf.send(f'SOUR:FREQ {freq_rf}GHz')
 
                 src.send('OUTPut ON')
@@ -378,7 +378,7 @@ class InstrumentController(QObject):
 
                 i_mul_read = float(mult.query('MEAS:CURR:DC? 1A,DEF'))
 
-                center_freq = freq_rf - freq_lo
+                center_freq = freq_rf_delta
                 sa.send(':CALC:MARK1:MODE POS')
                 sa.send(f':SENSe:FREQuency:CENTer {center_freq}GHz')
                 sa.send(f':CALCulate:MARKer1:X:CENTer {center_freq}GHz')
@@ -393,6 +393,7 @@ class InstrumentController(QObject):
                     'f_rf': freq_rf,
                     'p_lo': pow_lo,
                     'p_rf': pow_rf,
+                    'fpch': freq_rf_delta,
                     'u_mul': src_u,
                     'i_mul': i_mul_read,
                     'pow_read': pow_read,
@@ -402,6 +403,7 @@ class InstrumentController(QObject):
                 if mock_enabled:
                     raw_point = mocked_raw_data[index]
                     raw_point['loss'] = loss
+                    raw_point['fpch'] = freq_rf_delta
                     index += 1
 
                 print(raw_point)
