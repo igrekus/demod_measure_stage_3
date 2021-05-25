@@ -13,7 +13,6 @@ from instr.instrumentfactory import mock_enabled, GeneratorFactory, SourceFactor
 from measureresult import MeasureResult
 
 
-#
 class InstrumentController(QObject):
     pointReady = pyqtSignal()
 
