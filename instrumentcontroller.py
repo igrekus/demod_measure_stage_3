@@ -4,13 +4,12 @@ import time
 import numpy as np
 
 from collections import defaultdict
-from pprint import pprint
-from os.path import isfile
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 
 from instr.instrumentfactory import mock_enabled, GeneratorFactory, SourceFactory, \
     MultimeterFactory, AnalyzerFactory
 from measureresult import MeasureResult
+from util.file import load_ast_if_exists, pprint_to_file
 
 
 class InstrumentController(QObject):
@@ -19,24 +18,20 @@ class InstrumentController(QObject):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
+        addrs = load_ast_if_exists('', default={
+            'Анализатор': 'GPIB1::18::INSTR',
+            'P LO': 'GPIB1::6::INSTR',
+            'P RF': 'GPIB1::20::INSTR',
+            'Источник': 'GPIB1::3::INSTR',
+            'Мультиметр': 'GPIB1::22::INSTR',
+        })
         self.requiredInstruments = {
-            'Анализатор': AnalyzerFactory('GPIB1::7::INSTR'),
-            'P LO': GeneratorFactory('GPIB1::6::INSTR'),
-            'P RF': GeneratorFactory('GPIB1::20::INSTR'),
-            'Источник': SourceFactory('GPIB1::3::INSTR'),
-            'Мультиметр': MultimeterFactory('GPIB1::22::INSTR'),
+            'Анализатор': AnalyzerFactory(addrs['Анализатор']),
+            'P LO': GeneratorFactory(addrs['P LO']),
+            'P RF': GeneratorFactory(addrs['P RF']),
+            'Источник': SourceFactory(addrs['Источник']),
+            'Мультиметр': MultimeterFactory(addrs['Мультиметр']),
         }
-
-        if isfile('./instr.ini'):
-            with open('./instr.ini', mode='rt', encoding='utf-8') as f:
-                addrs = ast.literal_eval(''.join(f.readlines()))
-                self.requiredInstruments = {
-                    'Анализатор': AnalyzerFactory(addrs['Анализатор']),
-                    'P LO': GeneratorFactory(addrs['P LO']),
-                    'P RF': GeneratorFactory(addrs['P RF']),
-                    'Источник': SourceFactory(addrs['Источник']),
-                    'Мультиметр': MultimeterFactory(addrs['Мультиметр']),
-                }
 
         self.deviceParams = {
             'Демодулятор': {
@@ -44,7 +39,7 @@ class InstrumentController(QObject):
             },
         }
 
-        self.secondaryParams = {
+        self.secondaryParams = load_ast_if_exists('params.ini', default={
             'Usrc': 5.0,
             'Flo_min': 1.0,
             'Flo_max': 3.0,
@@ -58,28 +53,16 @@ class InstrumentController(QObject):
             'Umin': 4.75,
             'Umax': 5.25,
             'Udelta': 0.05,
-        }
+        })
 
-        if isfile('./params.ini'):
-            with open('./params.ini', 'rt', encoding='utf-8') as f:
-                self.secondaryParams = ast.literal_eval(''.join(f.readlines()))
+        self._calibrated_pows_lo = load_ast_if_exists('cal_lo.ini', default={})
+        self._calibrated_pows_rf = load_ast_if_exists('cal_rf.ini', default={})
 
-        self._calibrated_pows_lo = dict()
-        if isfile('./cal_lo.ini'):
-            with open('./cal_lo.ini', mode='rt', encoding='utf-8') as f:
-                self._calibrated_pows_lo = ast.literal_eval(''.join(f.readlines()))
-
-        self._calibrated_pows_rf = dict()
-        if isfile('./cal_rf.ini'):
-            with open('./cal_rf.ini', mode='rt', encoding='utf-8') as f:
-                self._calibrated_pows_rf = ast.literal_eval(''.join(f.readlines()))
-
-        self._deltas = {5: 0.9, 10: 0.82, 20: 0.82, 30: 0.82, 40: 0.82, 50: 0.86, 60: 0.86, 70: 0.86, 80: 0.86,
-                        90: 0.86, 100: 0.93, 150: 0.98, 200: 0.99, 250: 1.02, 300: 1.05, 350: 1.1, 400: 1.15, 450: 1.51}
-
-        if isfile('./deltas.ini'):
-            with open('./deltas.ini', 'rt', encoding='utf-8') as f:
-                self._deltas = ast.literal_eval(''.join(f.readlines()))
+        self._deltas = load_ast_if_exists('deltas.ini', default={
+            5: 0.9, 10: 0.82, 20: 0.82, 30: 0.82, 40: 0.82, 50: 0.86,
+            60: 0.86, 70: 0.86, 80: 0.86, 90: 0.86, 100: 0.93, 150: 0.98,
+            200: 0.99, 250: 1.02, 300: 1.05, 350: 1.1, 400: 1.15, 450: 1.51
+        })
 
         self._instruments = dict()
         self.found = False
@@ -175,8 +158,7 @@ class InstrumentController(QObject):
             print('loss: ', loss)
             result[freq] = loss
 
-        with open('cal_lo.ini', mode='wt', encoding='utf-8') as f:
-            pprint(result, stream=f, sort_dicts=False)
+        pprint_to_file('cal_lo.ini', result)
 
         gen_lo.send(f'OUTP:STAT OFF')
         sa.send(':CAL:AUTO ON')
@@ -245,8 +227,7 @@ class InstrumentController(QObject):
                 result[freq_lo][freq_rf_delta] = loss
 
         result = {k: v for k, v in result.items()}
-        with open('cal_rf.ini', mode='wt', encoding='utf-8') as f:
-            pprint(result, stream=f)
+        pprint_to_file('cal_rf.ini', result)
 
         gen_rf.send(f'OUTP:STAT OFF')
         sa.send(':CAL:AUTO ON')
@@ -474,8 +455,7 @@ class InstrumentController(QObject):
         self.pointReady.emit()
 
     def saveConfigs(self):
-        with open('./params.ini', 'wt', encoding='utf-8') as f:
-            pprint(self.secondaryParams, stream=f)
+        pprint_to_file('params.ini', self.secondaryParams)
 
     @pyqtSlot(dict)
     def on_secondary_changed(self, params):
@@ -484,7 +464,3 @@ class InstrumentController(QObject):
     @property
     def status(self):
         return [i.status for i in self._instruments.values()]
-
-
-def parse_float_list(lst):
-    return [float(x) for x in lst.split(',')]
