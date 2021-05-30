@@ -305,8 +305,6 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._devices._layout.addRow('ΔU=', self._spinUdelta)
         # endregion
 
-        self._connectSignals()
-
     def _connectSignals(self):
         self._spinPlo.valueChanged.connect(self.on_params_changed)
         self._spinFloMin.valueChanged.connect(self.on_params_changed)
@@ -419,6 +417,8 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinUmin.setValue(params['Umin'])
         self._spinUmax.setValue(params['Umax'])
         self._spinUdelta.setValue(params['Udelta'])
+
+        self._connectSignals()
 
     def on_debounced_gui(self):
         remove_if_exists('cal_lo.ini')
