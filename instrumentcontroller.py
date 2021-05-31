@@ -18,7 +18,7 @@ class InstrumentController(QObject):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        addrs = load_ast_if_exists('', default={
+        addrs = load_ast_if_exists('instr.ini', default={
             'Анализатор': 'GPIB1::18::INSTR',
             'P LO': 'GPIB1::6::INSTR',
             'P RF': 'GPIB1::20::INSTR',
