@@ -313,8 +313,10 @@ class InstrumentController(QObject):
         res = []
         for freq_lo in freq_lo_values:
 
+            freq_lo_label = float(freq_lo)
             if freq_lo_x2:
                 freq_lo *= 2
+                freq_lo_label *= 2
 
             gen_lo.send(f'SOUR:FREQ {freq_lo}GHz')
 
@@ -367,6 +369,7 @@ class InstrumentController(QObject):
 
                 raw_point = {
                     'f_lo': freq_lo,
+                    'f_lo_label': freq_lo_label,
                     'f_rf': freq_rf,
                     'p_lo': pow_lo,
                     'p_rf': pow_rf,
@@ -381,6 +384,7 @@ class InstrumentController(QObject):
                     raw_point = mocked_raw_data[index]
                     raw_point['loss'] = loss
                     raw_point['fpch'] = freq_rf_delta
+                    raw_point['f_lo_label'] = freq_lo_label
                     index += 1
 
                 print(raw_point)
