@@ -410,6 +410,8 @@ class InstrumentController(QObject):
         gen_rf.send(f'SOUR:FREQ {freq_lo_start + freq_rf_deltas_and_losses[0][0]}GHz')
         gen_lo.send(f'SOUR:FREQ {freq_lo_start}GHz')
 
+        sa.send(':CAL:AUTO ON')
+
         # measure current
         # temporary hacky implementation
         if mock_enabled:
