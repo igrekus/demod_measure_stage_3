@@ -55,8 +55,11 @@ class MeasureResult:
         # endregion
 
         if self.adjustment is not None:
-            point = self.adjustment[len(self._processed)]
-            k_loss += point['k_loss']
+            try:
+                point = self.adjustment[len(self._processed)]
+                k_loss += point['k_loss']
+            except IndexError:
+                pass
 
         self._report = {
             'p_lo': p_lo,
