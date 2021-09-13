@@ -224,6 +224,10 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._checkX2FreqLo = QCheckBox(parent=self)
         self._checkX2FreqLo.setChecked(False)
         self._devices._layout.addRow('x2 Fгет.', self._checkX2FreqLo)
+
+        self._checkD = QCheckBox(parent=self)
+        self._checkD.setChecked(False)
+        self._devices._layout.addRow('D', self._checkD)
         # endregion LO
 
         # region RF params
@@ -311,6 +315,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloMax.valueChanged.connect(self.on_params_changed)
         self._spinFloDelta.valueChanged.connect(self.on_params_changed)
         self._checkX2FreqLo.toggled.connect(self.on_params_changed)
+        self._checkD.toggled.connect(self.on_params_changed)
 
         self._spinPrf.valueChanged.connect(self.on_params_changed)
 
@@ -392,6 +397,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
             'Flo_max': self._spinFloMax.value(),
             'Flo_delta': self._spinFloDelta.value(),
             'is_Flo_x2': self._checkX2FreqLo.isChecked(),
+            'D': self._checkD.isChecked(),
             'Prf': self._spinPrf.value(),
             'Usrc': self._spinUsrc.value(),
             'loss': self._spinLoss.value(),
@@ -409,6 +415,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinFloMax.setValue(params['Flo_max'])
         self._spinFloDelta.setValue(params['Flo_delta'])
         self._checkX2FreqLo.setChecked(params['is_Flo_x2'])
+        self._checkD.setChecked(params['D'])
         self._spinPrf.setValue(params['Prf'])
         self._spinUsrc.setValue(params['Usrc'])
         self._spinLoss.setValue(params['loss'])

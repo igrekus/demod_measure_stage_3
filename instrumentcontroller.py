@@ -45,6 +45,7 @@ class InstrumentController(QObject):
             'Flo_max': 3.0,
             'Flo_delta': 0.5,
             'is_Flo_x2': False,
+            'D': False,
             'Plo': -5.0,
             'Prf': -5.0,
             'loss': 0.82,
@@ -283,6 +284,7 @@ class InstrumentController(QObject):
         freq_lo_end = secondary['Flo_max']
         freq_lo_step = secondary['Flo_delta']
         freq_lo_x2 = secondary['is_Flo_x2']
+        d = secondary['D']
 
         pow_lo = secondary['Plo']
         pow_rf = secondary['Prf']
@@ -304,6 +306,9 @@ class InstrumentController(QObject):
 
         gen_lo.send(f':OUTP:MOD:STAT OFF')
         # gen_rf.send(f':OUTP:MOD:STAT OFF')
+        gen_f_mult = 2 if d else 1
+        gen_rf.send(f':FREQ:MULT {gen_f_mult}')
+        gen_lo.send(f':FREQ:MULT {gen_f_mult}')
 
         if mock_enabled:
             with open('./mock_data/-5db.txt', mode='rt', encoding='utf-8') as f:
@@ -358,6 +363,7 @@ class InstrumentController(QObject):
                 i_mul_read = float(mult.query('MEAS:CURR:DC? 1A,DEF'))
 
                 center_freq = freq_rf_delta
+                sa.send(f'DISP:WIND:TRAC:X:OFFS {freq_rf_delta * 1_000 / 2}MHz')
                 sa.send(':CALC:MARK1:MODE POS')
                 sa.send(f':SENSe:FREQuency:CENTer {center_freq}GHz')
                 sa.send(f':CALCulate:MARKer1:X:CENTer {center_freq}GHz')
@@ -392,6 +398,8 @@ class InstrumentController(QObject):
                 res.append(raw_point)
                 self._add_measure_point(raw_point)
 
+                # time.sleep(120)
+
         if not mock_enabled:
             with open('out.txt', mode='wt', encoding='utf-8') as f:
                 f.write(str(res))
@@ -410,6 +418,7 @@ class InstrumentController(QObject):
         gen_rf.send(f'SOUR:FREQ {freq_lo_start + freq_rf_deltas_and_losses[0][0]}GHz')
         gen_lo.send(f'SOUR:FREQ {freq_lo_start}GHz')
 
+        sa.send(f'DISP:WIND:TRAC:X:OFFS 0')
         sa.send(':CAL:AUTO ON')
 
         # measure current
