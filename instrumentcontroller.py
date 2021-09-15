@@ -373,7 +373,8 @@ class InstrumentController(QObject):
                 i_mul_read = float(mult.query('MEAS:CURR:DC? 1A,DEF'))
 
                 center_freq = freq_rf_delta
-                sa.send(f'DISP:WIND:TRAC:X:OFFS {freq_rf_delta * 1_000 / 2}MHz')
+                offset = 0 if not d else freq_rf_delta * 1_000 / 2
+                sa.send(f'DISP:WIND:TRAC:X:OFFS {offset}MHz')
                 sa.send(':CALC:MARK1:MODE POS')
                 sa.send(f':SENSe:FREQuency:CENTer {center_freq}GHz')
                 sa.send(f':CALCulate:MARKer1:X:CENTer {center_freq}GHz')
