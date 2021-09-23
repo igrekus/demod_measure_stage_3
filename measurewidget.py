@@ -241,13 +241,21 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         # endregion
 
         # region source params
-        self._spinUsrc = QDoubleSpinBox(parent=self)
-        self._spinUsrc.setMinimum(4.75)
-        self._spinUsrc.setMaximum(5.25)
-        self._spinUsrc.setSingleStep(0.25)
-        self._spinUsrc.setValue(5)
-        self._spinUsrc.setSuffix(' В')
-        self._devices._layout.addRow('Uпит.=', self._spinUsrc)
+        self._spinUsrcA = QDoubleSpinBox(parent=self)
+        self._spinUsrcA.setMinimum(4.75)
+        self._spinUsrcA.setMaximum(5.25)
+        self._spinUsrcA.setSingleStep(0.25)
+        self._spinUsrcA.setValue(5)
+        self._spinUsrcA.setSuffix(' В')
+        self._devices._layout.addRow('Uпит.A=', self._spinUsrcA)
+
+        self._spinUsrcD = QDoubleSpinBox(parent=self)
+        self._spinUsrcD.setMinimum(3.1)
+        self._spinUsrcD.setMaximum(3.5)
+        self._spinUsrcD.setSingleStep(0.1)
+        self._spinUsrcD.setValue(3.3)
+        self._spinUsrcD.setSuffix(' В')
+        self._devices._layout.addRow('Uпит.D=', self._spinUsrcD)
         # endregion
 
         # region calc params
@@ -319,7 +327,8 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
 
         self._spinPrf.valueChanged.connect(self.on_params_changed)
 
-        self._spinUsrc.valueChanged.connect(self.on_params_changed)
+        self._spinUsrcA.valueChanged.connect(self.on_params_changed)
+        self._spinUsrcD.valueChanged.connect(self.on_params_changed)
 
         self._spinLoss.valueChanged.connect(self.on_params_changed)
 
@@ -399,7 +408,8 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
             'is_Flo_x2': self._checkX2FreqLo.isChecked(),
             'D': self._checkD.isChecked(),
             'Prf': self._spinPrf.value(),
-            'Usrc': self._spinUsrc.value(),
+            'Usrc': self._spinUsrcA.value(),
+            'UsrcD': self._spinUsrcD.value(),
             'loss': self._spinLoss.value(),
             'ref_level': self._spinRefLevel.value(),
             'scale_y': self._spinScaleY.value(),
@@ -417,7 +427,8 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._checkX2FreqLo.setChecked(params['is_Flo_x2'])
         self._checkD.setChecked(params['D'])
         self._spinPrf.setValue(params['Prf'])
-        self._spinUsrc.setValue(params['Usrc'])
+        self._spinUsrcA.setValue(params['Usrc'])
+        self._spinUsrcD.setValue(params['UsrcD'])
         self._spinLoss.setValue(params['loss'])
         self._spinRefLevel.setValue(params['ref_level'])
         self._spinScaleY.setValue(params['scale_y'])
