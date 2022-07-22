@@ -22,15 +22,11 @@ class InstrumentController(QObject):
             'Анализатор': 'GPIB1::18::INSTR',
             'P LO': 'GPIB1::6::INSTR',
             'P RF': 'GPIB1::20::INSTR',
-            'Источник': 'GPIB1::3::INSTR',
-            'Мультиметр': 'GPIB1::22::INSTR',
         })
         self.requiredInstruments = {
             'Анализатор': AnalyzerFactory(addrs['Анализатор']),
             'P LO': GeneratorFactory(addrs['P LO']),
             'P RF': GeneratorFactory(addrs['P RF']),
-            'Источник': SourceFactory(addrs['Источник']),
-            'Мультиметр': MultimeterFactory(addrs['Мультиметр']),
         }
 
         self.deviceParams = {
@@ -49,8 +45,6 @@ class InstrumentController(QObject):
         }
 
         self.secondaryParams = load_ast_if_exists('params.ini', default={
-            'Usrc': 5.0,
-            'UsrcD': 3.3,
             'Flo_min': 1.0,
             'Flo_max': 3.0,
             'Flo_delta': 0.5,
@@ -61,9 +55,6 @@ class InstrumentController(QObject):
             'loss': 0.82,
             'ref_level': 10.0,
             'scale_y': 5.0,
-            'Umin': 4.75,
-            'Umax': 5.25,
-            'Udelta': 0.05,
         })
 
         self._calibrated_pows_lo = load_ast_if_exists('cal_lo.ini', default={})
@@ -263,8 +254,7 @@ class InstrumentController(QObject):
         print(f'launch measure with {token} {param} {secondary}')
 
         self._clear()
-        _, i_res = self._measure_s_params(token, param, secondary)
-        self.result.process_i(i_res)
+        self._measure_s_params(token, param, secondary)
         return True
 
     def _clear(self):
@@ -273,25 +263,12 @@ class InstrumentController(QObject):
     def _init(self):
         self._instruments['P LO'].send('*RST')
         self._instruments['P RF'].send('*RST')
-        self._instruments['Источник'].send('*RST')
-        self._instruments['Мультиметр'].send('*RST')
         self._instruments['Анализатор'].send('*RST')
 
     def _measure_s_params(self, token, param, secondary):
         gen_lo = self._instruments['P LO']
         gen_rf = self._instruments['P RF']
-        src = self._instruments['Источник']
-        mult = self._instruments['Мультиметр']
         sa = self._instruments['Анализатор']
-
-        src_u = secondary['Usrc']
-        src_i = 200   # mA
-        src_u_d = secondary['UsrcD']
-        src_i_d = 20   # mA
-
-        u_start = secondary['Umin']
-        u_end = secondary['Umax']
-        u_step = secondary['Udelta']
 
         freq_lo_start = secondary['Flo_min']
         freq_lo_end = secondary['Flo_max']
@@ -308,10 +285,6 @@ class InstrumentController(QObject):
 
         freq_lo_values = [round(x, 3) for x in np.arange(start=freq_lo_start, stop=freq_lo_end + 0.002, step=freq_lo_step)]
         freq_rf_deltas_and_losses = [[k / 1_000, v] for k, v in self._deltas.items()]
-        u_values = [round(x, 3) for x in np.arange(start=u_start, stop=u_end + 0.002, step=u_step)]
-
-        src.send(f'APPLY p6v,{src_u}V,{src_i}mA')
-        src.send(f'APPLY p25v,{src_u_d}V,{src_i_d}mA')
 
         sa.send(':CAL:AUTO OFF')
         sa.send(':SENS:FREQ:SPAN 1MHz')
@@ -348,8 +321,6 @@ class InstrumentController(QObject):
                     if not mock_enabled:
                         time.sleep(0.5)
 
-                    src.send('OUTPut OFF')
-
                     gen_rf.send(f'SOUR:POW {pow_rf}dbm')
                     gen_lo.send(f'SOUR:POW {pow_lo}dbm')
 
@@ -365,16 +336,12 @@ class InstrumentController(QObject):
                 freq_rf = (freq_lo if not freq_lo_x2 else (freq_lo / 2)) + freq_rf_delta
                 gen_rf.send(f'SOUR:FREQ {freq_rf}GHz')
 
-                src.send('OUTPut ON')
-
                 gen_lo.send(f'OUTP:STAT ON')
                 gen_rf.send(f'OUTP:STAT ON')
 
                 time.sleep(0.01)
                 if not mock_enabled:
                     time.sleep(0.5)
-
-                i_mul_read = float(mult.query('MEAS:CURR:DC? 1A,DEF'))
 
                 center_freq = freq_rf_delta
                 offset = 0 if not d else freq_rf_delta * 1_000 / 2
@@ -395,8 +362,6 @@ class InstrumentController(QObject):
                     'p_lo': pow_lo,
                     'p_rf': pow_rf,
                     'fpch': freq_rf_delta,
-                    'u_mul': src_u,
-                    'i_mul': i_mul_read,
                     'pow_read': pow_read,
                     'loss': loss,
                 }
@@ -425,8 +390,6 @@ class InstrumentController(QObject):
         if not mock_enabled:
             time.sleep(0.5)
 
-        src.send('OUTPut OFF')
-
         gen_rf.send(f'SOUR:POW {pow_rf}dbm')
         gen_lo.send(f'SOUR:POW {pow_lo}dbm')
 
@@ -436,48 +399,9 @@ class InstrumentController(QObject):
         sa.send(f'DISP:WIND:TRAC:X:OFFS 0')
         sa.send(':CAL:AUTO ON')
 
-        # measure current
-        # temporary hacky implementation
-        if mock_enabled:
-            with open('./mock_data/current.txt', mode='rt', encoding='utf-8') as f:
-                index = 0
-                mocked_raw_data = ast.literal_eval(''.join(f.readlines()))
-
-        i_res = []
-        for u in u_values:
-            if token.cancelled:
-                src.send('OUTPut OFF')
-                raise RuntimeError('measurement cancelled')
-
-            src.send(f'APPLY p6v,{u}V,{src_i}mA')
-            src.send('OUTPut ON')
-
-            time.sleep(0.1)
-            if not mock_enabled:
-                time.sleep(0.5)
-
-            # u_mul_read = float(mult.query('MEAS:VOLT?'))
-            i_mul_read = float(mult.query('MEAS:CURR:DC? 1A,DEF'))
-
-            raw_point = {
-                'u_mul': u,
-                # 'u_mul': u_mul_read,
-                'i_mul': i_mul_read * 1_000,
-            }
-
-            if mock_enabled:
-                raw_point = mocked_raw_data[index]
-                raw_point['i_mul'] *= 1_000
-                index += 1
-
-            print(raw_point)
-
-            i_res.append(raw_point)
-
         if not mock_enabled:
             time.sleep(0.5)
-        src.send('OUTPut OFF')
-        return res, i_res
+        return res
 
     def _add_measure_point(self, data):
         print('measured point:', data)

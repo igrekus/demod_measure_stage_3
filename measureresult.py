@@ -28,7 +28,6 @@ class MeasureResult:
         self.ready = False
 
         self.data = defaultdict(list)
-        self.data_i = dict()
 
         self.adjustment = load_ast_if_exists('adjust.ini', default=None)
         self._table_header = list()
@@ -51,9 +50,6 @@ class MeasureResult:
         f_rf = data['f_rf']
         f_pch = data['fpch']
 
-        u_mul = data['u_mul']
-        i_mul = data['i_mul']
-
         p_pch = data['pow_read']
 
         p_loss = data['loss']
@@ -73,8 +69,6 @@ class MeasureResult:
             'p_rf': p_rf,
             'f_rf': f_rf,
             'f_pch': f_pch,
-            'u_mul': round(u_mul, 1),
-            'i_mul': round(i_mul * mA, 2),
             'p_pch': p_pch,
             'k_loss': round(k_loss, 2),
         }
@@ -117,9 +111,6 @@ class MeasureResult:
 
         pprint_to_file('adjust.ini', self.adjustment)
 
-    def process_i(self, data):
-        self.data_i[1] = [list(d.values()) for d in data]
-
     @property
     def report(self):
         return dedent("""        Генераторы:
@@ -128,10 +119,6 @@ class MeasureResult:
         Pвх, дБм={p_rf}
         Fвх, ГГц={f_rf:0.2f}
         Fпч, МГц={f_pch:0.2f}
-        
-        Источник питания:
-        U, В={u_mul}
-        I, мА={i_mul}
 
         Анализатор:
         Pп, дБм={p_pch}
@@ -145,7 +132,6 @@ class MeasureResult:
         if not os.path.isdir(f'{path}'):
             os.makedirs(f'{path}')
         file_name_main = f'./{path}/{device}-stage3-{datetime.datetime.now().isoformat().replace(":", ".")}.xlsx'
-        file_name_current = f'./{path}/{device}-stage4-{datetime.datetime.now().isoformat().replace(":", ".")}.xlsx'
         df = pd.DataFrame(self._processed)
 
         df.columns = [
@@ -154,16 +140,10 @@ class MeasureResult:
             'Pвх, дБм',
             'Fвх, ГГц',
             'Fпч, ГГц',
-            'Uпит, В',
-            'Iпит, мА',
             'Pпч, дБм',
             'Кп, дБм',
         ]
         df.to_excel(file_name_main, engine='openpyxl', index=False)
-
-        df = pd.DataFrame({'u': v[0], 'i': v[1]} for v in self.data_i[1])
-        df.columns = ['Uпит, В', 'Iпот, мА']
-        df.to_excel(file_name_current, engine='openpyxl', index=False)
 
         full_path = os.path.abspath(file_name_main)
         Popen(f'explorer /select,"{full_path}"')
