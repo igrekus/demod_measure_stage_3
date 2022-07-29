@@ -252,6 +252,14 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinUsrcA.setSuffix(' В')
         self._devices._layout.addRow('Uпит.A=', self._spinUsrcA)
 
+        self._spinAnalogLimCur = QDoubleSpinBox(parent=self)
+        self._spinAnalogLimCur.setMinimum(0)
+        self._spinAnalogLimCur.setMaximum(1000)
+        self._spinAnalogLimCur.setSingleStep(1)
+        self._spinAnalogLimCur.setValue(200)
+        self._spinAnalogLimCur.setSuffix(' мА')
+        self._devices._layout.addRow('Iлим.мA=', self._spinAnalogLimCur)
+
         self._spinUsrcD = QDoubleSpinBox(parent=self)
         self._spinUsrcD.setMinimum(3.1)
         self._spinUsrcD.setMaximum(3.5)
@@ -331,6 +339,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._spinPrf.valueChanged.connect(self.on_params_changed)
 
         self._spinUsrcA.valueChanged.connect(self.on_params_changed)
+        self._spinAnalogLimCur.valueChanged.connect(self.on_params_changed)
         self._spinUsrcD.valueChanged.connect(self.on_params_changed)
 
         self._spinLoss.valueChanged.connect(self.on_params_changed)
@@ -412,6 +421,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
             'D': self._checkD.isChecked(),
             'Prf': self._spinPrf.value(),
             'Usrc': self._spinUsrcA.value(),
+            'Ia_lim': self._spinAnalogLimCur.value(),
             'UsrcD': self._spinUsrcD.value(),
             'loss': self._spinLoss.value(),
             'ref_level': self._spinRefLevel.value(),
@@ -431,6 +441,7 @@ class MeasureWidgetWithSecondaryParameters(MeasureWidget):
         self._checkD.setChecked(params['D'])
         self._spinPrf.setValue(params['Prf'])
         self._spinUsrcA.setValue(params['Usrc'])
+        self._spinAnalogLimCur.setValue(params['Ia_lim'])
         self._spinUsrcD.setValue(params['UsrcD'])
         self._spinLoss.setValue(params['loss'])
         self._spinRefLevel.setValue(params['ref_level'])
